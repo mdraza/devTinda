@@ -1,25 +1,22 @@
-import express from "express";
+const express = require("express");
 
 const app = express();
 
-app.get(
-  "/user",
-  (req, res, next) => {
-    // res.send("Request handler-1");
-    next();
-  },
-  (req, res, next) => {
-    // res.send("Request handler-2");
-    next();
-  },
-  (req, res, next) => {
-    // res.send("Request handler-3");
-    next();
-  },
-  (req, res, next) => {
-    res.send("Request handler-4");
-  },
-);
+const { adminAuth, userAuth } = require("./middleware/auth");
+
+app.use("/admin", adminAuth);
+
+app.get("/user", userAuth, (req, res) => {
+  res.send("User data");
+});
+
+app.get("/admin/getAllData", (req, res) => {
+  res.send("Get all data!");
+});
+
+app.get("/admin/deleteUser", (req, res) => {
+  res.send("Deleted user!");
+});
 
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
