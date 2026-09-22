@@ -4,15 +4,103 @@ const User = require("./models/user");
 
 const app = express();
 
-app.post("/signup", async (req, res) => {
+app.use(express.json());
+
+app.get("/feed", async (req, res) => {
   try {
-    const user = new User({
-      firstName: "Umamah",
-      lastName: "Raza",
-      emailId: "umamah@gmail.com",
-      password: "Umamah@123",
+    const user = await User.findOne({ emailId: req.body.emailId });
+
+    if (user.length === 0) {
+      res.status(404).json({
+        message: "user not found",
+      });
+    } else {
+      res.status(201).json({ user });
+    }
+  } catch (error) {
+    console.log("Something went wrong", error);
+    res.status(500).json({
+      message:
+        "Something went wrong while fetching the user data from the database",
+    });
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  try {
+    const userId = req.body._id;
+    const user = await User.findOneAndDelete({ _id: userId });
+
+    // User not found
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found!",
+      });
+    }
+
+    // User deleted successfully
+    res.status(200).json({
+      message: "User deleted successfully!",
+    });
+  } catch (error) {
+    console.log("Error deleting user", error);
+    res.status(500).json({
+      message: "Something went wrong while deleting user",
+    });
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  try {
+    const userId = req.body._id;
+    const data = req.body;
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
     });
 
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "User updated successfully!",
+      user: user,
+    });
+  } catch (error) {
+    console.log("Error updating user", error);
+    res.status(500).json({
+      message: "Something went wrong while updating the user!",
+    });
+  }
+});
+
+app.get("/feed/all", async (req, res) => {
+  try {
+    const user = await User.find({});
+
+    if (user.length === 0) {
+      res.status(404).json({
+        message: "user not found",
+      });
+    } else {
+      res.status(201).json({ user });
+    }
+  } catch (error) {
+    console.log("Something went wrong", error);
+    res.status(500).json({
+      message:
+        "Something went wrong while fetching the user data from the database",
+    });
+  }
+});
+
+app.post("/signup", async (req, res) => {
+  try {
+    const user = new User(req.body);
+
+    console.log(req.body);
     await user.save();
 
     res.status(201).json({
