@@ -6,6 +6,31 @@ const app = express();
 
 app.use(express.json());
 
+app.post("/signup", async (req, res) => {
+  try {
+    const user = new User(req.body);
+
+    await user.save();
+
+    res.status(201).json({
+      message: "User registered successfully!",
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailId: user.emailId,
+        password: user.password,
+      },
+    });
+  } catch (error) {
+    console.log("SignUp error", error);
+
+    res.status(500).json({
+      message: "Something went wrong while creating the user!",
+      error: error.message,
+    });
+  }
+});
+
 app.get("/feed", async (req, res) => {
   try {
     const user = await User.findOne({ emailId: req.body.emailId });
@@ -92,31 +117,6 @@ app.get("/feed/all", async (req, res) => {
     res.status(500).json({
       message:
         "Something went wrong while fetching the user data from the database",
-    });
-  }
-});
-
-app.post("/signup", async (req, res) => {
-  try {
-    const user = new User(req.body);
-
-    console.log(req.body);
-    await user.save();
-
-    res.status(201).json({
-      message: "User registered successfully!",
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        emailId: user.emailId,
-        password: user.password,
-      },
-    });
-  } catch (error) {
-    console.log("SignUp error", error);
-
-    res.status(500).json({
-      message: "Something went wrong while creating the user!",
     });
   }
 });
